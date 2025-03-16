@@ -1,13 +1,18 @@
-import requests
+import os
 import re
-from bs4 import BeautifulSoup
+import requests
+from tqdm import tqdm
 from colorama import Fore
+from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
 
 class TwidlScraper:
     def __init__(self, max_workers: int, amount: int):
         self.max_workers = max_workers
         self.amount = amount
+
+        with open("data/log.txt", "r", encoding="utf-8", errors="ignore") as file:
+            self.links = file.readlines()
 
     def get_url(self, i: int):
         res = requests.get(f"https://www.twi-dl.net/hozon.php?p={i}")
@@ -37,7 +42,26 @@ class TwidlScraper:
     def run(self):
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             executor.map(self.get_url, range(self.amount))
-    
+
+    def download(self):
+        for link in tqdm(self.links, desc="Downloading", unit="file"):
+            link = link.strip() 
+            
+            if link: 
+                try:
+                    response = requests.get(link, stream=True) 
+                    response.raise_for_status()
+                    
+                    filename = link.split('/')[-1]
+                    
+                    path = os.path.join("data/videos", filename)
+                    with open(path, "wb") as f:
+                        for chunk in response.iter_content(chunk_size=8192):
+                            f.write(chunk)
+                    tqdm.write(Fore.GREEN+"[Success] "+Fore.RESET+f"{filename}")
+                except Exception as e:
+                    tqdm.write(Fore.GREEN+"[Failed] "+Fore.RESET+f"{link}")
+
 if __name__ == "__main__":
     TwidlScraper = TwidlScraper(max_workers=50, amount=33)
-    TwidlScraper.run()
+    TwidlScraper.download()
