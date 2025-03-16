@@ -23,7 +23,7 @@ You can  and download the link to the video within https://twi-dl.net.
      ```
   2. Navigate into the project directory:
      ```bash
-     cd https://github.com/yuk228/Twidl-Scraper
+     cd Twidl-Scraper
      ```
   3. Install the required dependencies:
      ```bash
