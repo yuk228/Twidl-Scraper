@@ -1,5 +1,6 @@
 import os
 import re
+import time
 import requests
 from tqdm import tqdm
 from colorama import Fore
@@ -61,7 +62,22 @@ class TwidlScraper:
                     tqdm.write(Fore.GREEN+"[Success] "+Fore.RESET+f"{filename}")
                 except Exception as e:
                     tqdm.write(Fore.GREEN+"[Failed] "+Fore.RESET+f"{link}")
+    
+    def send(self, webhook: str, limit: float):
+        with open("data/log.txt", "r", encoding="utf-8", errors="ignore") as f:
+            lines = f.readlines()
+            try:
+                for line in lines:
+                    time.sleep(float(limit))
+                    res = requests.post(webhook, json={"content": line}, headers={"Content-Type": "application/json"})
+                    if res.status_code == 404:
+                        print("webhook not found")
+                        break
+                    print(res.status_code)
+                print("sent")
+            except Exception as e:
+                print(e)
 
 if __name__ == "__main__":
     TwidlScraper = TwidlScraper(max_workers=50, amount=33)
-    TwidlScraper.download()
+    TwidlScraper.send(webhook="webhook here", limit=1.45)
